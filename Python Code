@@ -1,19 +1,13 @@
 ###V1.2
 import csv
 import os
-import matplotlib.pyplot as plt
 import matplotlib
+import matplotlib.pyplot as plt
 matplotlib.use('TkAgg')
 
 # Define the file name and field names for the CSV file
 file_name = 'user_progress.csv'
 field_names = ['Session #', 'Date', 'Score', 'Distance']
-
-# Prompt the user for input
-distance = input("Enter the distance in yards (30, 40, 50, 60, 70): ")
-session_num = int(input("Enter the session number (1-30): "))
-date = input("Enter the date (MM-DD): ")
-score = int(input("Enter the total score earned after the session (max 72): "))
 
 # Create the CSV file if it does not exist
 if not os.path.isfile(file_name):
@@ -21,12 +15,7 @@ if not os.path.isfile(file_name):
         writer = csv.DictWriter(f, fieldnames=field_names)
         writer.writeheader()
 
-# Append the data to the CSV file
-with open(file_name, 'a', newline='') as f:
-    writer = csv.DictWriter(f, fieldnames=field_names)
-    writer.writerow({'Session #': session_num, 'Date': date, 'Score': score, 'Distance': distance})
-
-# Initialize empty lists for each distance
+# Read the data from the CSV file
 distances = {
     30: {'sessions': [], 'scores': []},
     40: {'sessions': [], 'scores': []},
@@ -35,85 +24,34 @@ distances = {
     70: {'sessions': [], 'scores': []}
 }
 
+with open(file_name, 'r', newline='') as f:
+    reader = csv.DictReader(f)
+    for row in reader:
+        distance = int(row['Distance'])
+        distances[distance]['sessions'].append(int(row['Session #']))
+        distances[distance]['scores'].append(int(row['Score']))
+
+# Prompt the user for input
+distance = int(input("Enter the distance in yards (30, 40, 50, 60, 70): "))
+session_num = int(input("Enter the session number (1-30): "))
+date = input("Enter the date (MM-DD): ")
+score = int(input("Enter the total score earned after the session (max 72): "))
+
+# Append the data to the CSV file
+with open(file_name, 'a', newline='') as f:
+    writer = csv.DictWriter(f, fieldnames=field_names)
+    writer.writerow({'Session #': session_num, 'Date': date, 'Score': score, 'Distance': distance})
+
 # Plot the data for each distance
 colors = ['b', 'g', 'r', 'c', 'm']
 plt.figure(figsize=(8, 6))
 for i, distance in enumerate(distances):
-    with open(file_name, 'r', newline='') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            if row['Distance'] == str(distance):
-                distances[distance]['sessions'].append(int(row['Session #']))
-                distances[distance]['scores'].append(int(row['Score']))
     plt.plot(distances[distance]['sessions'], distances[distance]['scores'], f"{colors[i]}o-", label=f"{distance} yds")
+plt.plot(session_num, score, 'ko', label="New session")
 plt.title("Archery Tracker")
 plt.xlabel("Session #")
 plt.ylabel("Score (out of 72)")
 plt.legend()
 plt.xticks(range(1, 31))
-plt.yticks(range(0, 75, 5))
+plt.yticks(range(0, 73, 5))
 plt.show()
-
-
-
-
-###V1.1
-import csv
-import os
-import matplotlib.pyplot as plt
-import matplotlib
-matplotlib.use('TkAgg')
-
-# Define the file name and field names for the CSV file
-file_name = 'user_progress.csv'
-field_names = ['Date', 'Time', 'Sets', 'Arrows', 'Distance', 'Total Points']
-
-while True:
-    # Prompt the user for input
-    date = input("Enter the date (MM-DD): ")
-    time = input("Enter the time (HH:MM): ")
-    sets = int(input("Enter the number of sets: "))
-    arrows = int(input("Enter the number of arrows per set: "))
-    distance = float(input("Enter the distance in yards: "))
-    total_points = int(input("Enter the total points earned after the session: "))
-
-    # Add the data to a dictionary
-    data = {'Date': date, 'Time': time, 'Sets': sets, 'Arrows': arrows, 'Distance': distance, 'Total Points': total_points}
-
-    # Create the CSV file if it does not exist
-    if not os.path.isfile(file_name):
-        with open(file_name, 'w', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=field_names)
-            writer.writeheader()
-
-    # Append the data to the CSV file
-    with open(file_name, 'a', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=field_names)
-        writer.writerow(data)
-
-    # Create the visualization
-    with open(file_name, 'r', newline='') as f:
-        reader = csv.DictReader(f)
-        distances = {}
-        for row in reader:
-            distance = float(row['Distance'])
-            total_points = int(row['Total Points'])
-            if distance not in distances:
-                distances[distance] = {'Dates': [], 'Points': []}
-            distances[distance]['Dates'].append(row['Date'])
-            distances[distance]['Points'].append(total_points)
-
-    plt.figure(figsize=(8,6))
-    for distance, data in distances.items():
-        plt.plot(data['Dates'], data['Points'], marker='o', label=f'{distance:.0f}yds')
-    plt.title("Total Points Earned per Session")
-    plt.xlabel("Date")
-    plt.ylabel("Total Points")
-    plt.grid(True)
-    plt.legend()
-    plt.show()
-
-    # Prompt the user if they want to continue or exit
-    choice = input("Enter 'c' to continue or any other key to exit: ")
-    if choice.lower() != 'c':
-        break
