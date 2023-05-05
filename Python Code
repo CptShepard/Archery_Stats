@@ -1,4 +1,3 @@
-###V1.2
 import csv
 import os
 import matplotlib
@@ -33,7 +32,12 @@ with open(file_name, 'r', newline='') as f:
 
 # Prompt the user for input
 distance = int(input("Enter the distance in yards (30, 40, 50, 60, 70): "))
-session_num = int(input("Enter the session number (1-30): "))
+if len(distances[distance]['sessions']) == 0:
+    session_num = int(input("Enter the session number (1-30): "))
+else:
+    last_session_num = distances[distance]['sessions'][-1]
+    session_num = last_session_num + 1
+    print(f"Next available session for distance {distance} is {session_num}")
 date = input("Enter the date (MM-DD): ")
 score = int(input("Enter the total score earned after the session (max 72): "))
 
